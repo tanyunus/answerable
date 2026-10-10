@@ -7,6 +7,7 @@ generator.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import Enum
 
@@ -61,8 +62,12 @@ class Thresholds:
     evidence_floor: float
 
     def __post_init__(self) -> None:
-        if not 0.0 <= self.relevance_floor <= 1.0:
-            raise ValueError("relevance_floor must be between 0.0 and 1.0")
+        # The relevance floor has no upper bound, because the scale it sits on has none. A
+        # dot product over unnormalised vectors, a BM25 score and a reranker logit can all
+        # exceed 1.0, and a caller using one of those must be able to say so.
+        if not math.isfinite(self.relevance_floor) or self.relevance_floor < 0.0:
+            raise ValueError("relevance_floor must be a finite number and not negative")
+        # Evidence is a share of the query's content terms, so this one genuinely is bounded.
         if not 0.0 <= self.evidence_floor <= 1.0:
             raise ValueError("evidence_floor must be between 0.0 and 1.0")
 
