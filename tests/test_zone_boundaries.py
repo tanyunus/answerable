@@ -81,7 +81,7 @@ class ZoneBoundaries(unittest.TestCase):
     def test_coverage_just_under_the_evidence_floor_is_held_back(self):
         """One of three terms covered is not enough when two thirds are required."""
         decision = decide(
-            ("hardness", "market", "velmarite"),
+            ("hardness", "odour", "velmarite"),
             [found("d01", 0.80, ("velmarite", "green"))],
             Thresholds(relevance_floor=0.50, evidence_floor=0.66),
         )
