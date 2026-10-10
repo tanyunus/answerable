@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -111,6 +112,37 @@ class EvaluationDesign(unittest.TestCase):
                       if t in corpus_terms}
             self.assertEqual(len(shared), 1, (item["query"], shared))
             self.assertEqual(list(shared.values())[0], {"d21"}, (item["query"], shared))
+
+    def test_the_external_set_takes_no_part_in_either_floor(self):
+        """The external set is only worth having if it never touched the floors. Deriving
+        them from a corpus with the external questions appended to the labelled set must
+        leave both floors where they were."""
+        external = runner.load_external()
+        intruders = [dict(item, set=runner.CALIBRATION, expected_zone="empty",
+                          answerable_in_corpus=False, absent="planted by this test")
+                     for item in external]
+        self.assertEqual(runner.derive_floors(self.corpus, self.queries), self.floors)
+        moved = runner.derive_floors(self.corpus, self.queries + intruders)
+        self.assertNotEqual(moved, self.floors)
+
+    def test_the_relevance_only_baseline_keeps_the_relevance_floor(self):
+        """The baseline has to differ from the gate in exactly one floor, or it is not a
+        comparison with the second signal removed."""
+        base = runner.relevance_only(self.floors)
+        self.assertEqual(base.relevance_floor, self.floors.relevance_floor)
+        self.assertEqual(base.evidence_floor, 0.0)
+
+    def test_the_external_set_does_not_affect_the_exit_status(self):
+        """One external question reaches a generator with no answer in the corpus. The run
+        reports it and still exits zero, because the external set is a measurement."""
+        bundle = runner.run_all()
+        leaked = [item["query"] for item, gate, _ in bundle["external"]
+                  if gate.may_call_generator and item["answer_in"] == "none"]
+        self.assertEqual(len(leaked), 1, leaked)
+        proc = subprocess.run([sys.executable, str(ROOT / "eval" / "run.py")],
+                              capture_output=True, text=True, check=False)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn(leaked[0], proc.stdout)
 
     def test_every_question_belongs_to_exactly_one_half(self):
         halves = {item["set"] for item in self.queries}

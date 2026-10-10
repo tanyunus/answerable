@@ -90,6 +90,20 @@ def decide(terms, results, thresholds: Thresholds) -> Decision:
             reason="the question carries no content terms, so there is nothing to ground",
         )
 
+    if not results:
+        # Checked before the floors, and not left to `relevance_of` returning 0.0 for an
+        # empty list. A relevance floor may be negative, because a reranker emitting a
+        # logit scores below zero for most of what it sees, and against such a floor that
+        # 0.0 reads as clearing it. The query would land in the ambiguous zone, whose
+        # contract is that the retrieved documents may be shown, with no documents to show.
+        return Decision(
+            zone=Zone.EMPTY,
+            relevance=relevance,
+            evidence=0.0,
+            support_doc_id="",
+            reason="nothing was retrieved, so there is nothing to ground",
+        )
+
     if relevance < thresholds.relevance_floor:
         return Decision(
             zone=Zone.EMPTY,

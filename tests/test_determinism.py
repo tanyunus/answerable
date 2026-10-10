@@ -79,9 +79,21 @@ class Determinism(unittest.TestCase):
     def test_the_committed_results_file_matches_a_fresh_run(self):
         """`eval/results.md` is checked in, so it has to be the output of the code
         beside it and not a snapshot of an older one."""
-        fresh = runner.digest(runner.evaluate(self.corpus, self.queries, self.floors))
+        fresh = runner.full_digest(runner.run_all())
         committed = (ROOT / "eval" / "results.md").read_text(encoding="utf-8")
         self.assertIn(fresh, committed)
+
+    def test_the_fingerprint_covers_the_baseline_and_the_external_set(self):
+        """A number reported in the results has to be inside the fingerprint, or it could
+        change without the committed results file noticing."""
+        bundle = runner.run_all()
+        base = runner.full_digest(bundle)
+        touched = dict(bundle)
+        touched["external"] = bundle["external"][1:]
+        self.assertNotEqual(runner.full_digest(touched), base)
+        touched = dict(bundle)
+        touched["labelled_baseline"] = bundle["labelled_baseline"][1:]
+        self.assertNotEqual(runner.full_digest(touched), base)
 
 
 if __name__ == "__main__":

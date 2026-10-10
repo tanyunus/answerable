@@ -54,19 +54,22 @@ class Thresholds:
     """The two floors.
 
     `relevance_floor` is on the retriever's score scale, so it has to be re-derived for any
-    retriever other than the one in this repository. `evidence_floor` is a share of the
-    query's content terms and is scale free.
+    retriever other than the one in this repository. It carries no bound in either
+    direction. `evidence_floor` is a share of the query's content terms and is scale free.
     """
 
     relevance_floor: float
     evidence_floor: float
 
     def __post_init__(self) -> None:
-        # The relevance floor has no upper bound, because the scale it sits on has none. A
-        # dot product over unnormalised vectors, a BM25 score and a reranker logit can all
-        # exceed 1.0, and a caller using one of those must be able to say so.
-        if not math.isfinite(self.relevance_floor) or self.relevance_floor < 0.0:
-            raise ValueError("relevance_floor must be a finite number and not negative")
+        # The relevance floor has no bound in either direction, because the scale it sits on
+        # has none. A dot product over unnormalised vectors and a BM25 score can exceed 1.0,
+        # and a reranker that emits a logit scores below zero for most of what it sees, so a
+        # caller whose useful cut sits at -1.5 has to be able to say so. Only a value that
+        # is not a number is refused, since it would quietly compare false against every
+        # score and admit nothing.
+        if not math.isfinite(self.relevance_floor):
+            raise ValueError("relevance_floor must be a finite number")
         # Evidence is a share of the query's content terms, so this one genuinely is bounded.
         if not 0.0 <= self.evidence_floor <= 1.0:
             raise ValueError("evidence_floor must be between 0.0 and 1.0")

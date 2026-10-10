@@ -50,6 +50,28 @@ def load_fixtures():
     return corpus, queries
 
 
+def load_external():
+    """The external question set.
+
+    Written from the corpus alone by a model that never saw the floors, the gate or
+    `queries.json`. It takes no part in deriving a floor and no part in the exit status. Its
+    job is to answer a question the labelled set cannot: the labelled set was written by the
+    same hand as the corpus and the floors, so it cannot say what happens to questions
+    phrased by someone else.
+    """
+    return json.loads((HERE / "external.json").read_text(encoding="utf-8"))
+
+
+def relevance_only(floors: Thresholds) -> Thresholds:
+    """The one signal baseline: same relevance floor, evidence floor at zero.
+
+    Coverage is never below zero, so every query that clears the relevance floor becomes
+    answerable. This is what the gate would be with the second signal removed, and it is the
+    comparison that says what the second signal buys.
+    """
+    return Thresholds(relevance_floor=floors.relevance_floor, evidence_floor=0.0)
+
+
 def _signals(index, question):
     terms = content_terms(question)
     results = index.search(terms, RETRIEVAL_DEPTH)
@@ -104,6 +126,23 @@ def evaluate(corpus, queries, floors):
     return out
 
 
+def evaluate_external(corpus, external, floors):
+    """One decision per external question, under the gate and under the baseline.
+
+    Returns [(item, gate decision, baseline decision)]. Both go through `decide`, so the
+    baseline is the real code path with one floor lowered and not a reimplementation of the
+    comparison.
+    """
+    index = LexicalIndex(documents_from_records(corpus))
+    baseline = relevance_only(floors)
+    out = []
+    for item in external:
+        terms, results, _, _ = _signals(index, item["query"])
+        out.append((item, decide(terms, results, floors),
+                    decide(terms, results, baseline)))
+    return out
+
+
 def digest(decisions) -> str:
     """A stable fingerprint of every decision.
 
@@ -114,7 +153,7 @@ def digest(decisions) -> str:
     lines = [
         "\t".join([
             item["query"],
-            item["set"],
+            item.get("set") or item.get("kind") or "",
             d.zone.value,
             "{0:.6f}".format(d.relevance),
             "{0:.6f}".format(d.evidence),
@@ -123,6 +162,56 @@ def digest(decisions) -> str:
         for item, d in decisions
     ]
     return hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
+
+
+def run_all(floors=None):
+    """Everything this evaluation decides, in one place.
+
+    The runner, the fingerprint and the tests all read this, so a number reported in one of
+    them cannot drift from the same number in another.
+    """
+    corpus, queries = load_fixtures()
+    external = load_external()
+    if floors is None:
+        floors = derive_floors(corpus, queries)
+    baseline = relevance_only(floors)
+    return {
+        "corpus": corpus,
+        "queries": queries,
+        "floors": floors,
+        "baseline": baseline,
+        "labelled": evaluate(corpus, queries, floors),
+        "labelled_baseline": evaluate(corpus, queries, baseline),
+        "external": evaluate_external(corpus, external, floors),
+    }
+
+
+def full_digest(bundle) -> str:
+    """One fingerprint over every decision of the run, gate and baseline, both sets.
+
+    Tagged by which pass produced each row, so a gate decision and a baseline decision on
+    the same question cannot collide and cancel out.
+    """
+    rows = []
+    for item, d in bundle["labelled"]:
+        rows.append(("labelled " + item["set"], item["query"], d))
+    for item, d in bundle["labelled_baseline"]:
+        rows.append(("baseline " + item["set"], item["query"], d))
+    for item, gate, base in bundle["external"]:
+        rows.append(("external " + item["kind"], item["query"], gate))
+        rows.append(("external baseline " + item["kind"], item["query"], base))
+    lines = ["\t".join([tag, query, d.zone.value,
+                        "{0:.6f}".format(d.relevance), "{0:.6f}".format(d.evidence),
+                        d.support_doc_id])
+             for tag, query, d in rows]
+    return hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
+
+
+def _routed(rows, pick):
+    """(questions, routed by the gate, routed by relevance alone) over the given rows."""
+    chosen = [r for r in rows if pick(r[0])]
+    return len(chosen), sum(1 for r in chosen if r[1].may_call_generator), \
+        sum(1 for r in chosen if r[2].may_call_generator)
 
 
 def _subset(decisions, set_name):
@@ -198,7 +287,8 @@ def _value(v):
     return "none" if v is None else "{0:.3f}".format(v)
 
 
-def _markdown(decisions, floors, seeds, agree, document_count) -> str:
+def _markdown(decisions, baseline_decisions, external, floors, seeds, agree,
+              document_count, fingerprint) -> str:
     held = _subset(decisions, HELD_OUT)
     calib = _subset(decisions, CALIBRATION)
     held_total, held_leaked = _without_answer(held)
@@ -234,7 +324,7 @@ def _markdown(decisions, floors, seeds, agree, document_count) -> str:
         "| of those, routed to a generator | {0} |".format(len(all_leaked)),
         "| decisions identical across hash seeds {0} | {1} |".format(
             ", ".join(seeds), "yes" if agree else "no"),
-        "| decision digest | `{0}` |".format(digest(decisions)),
+        "| decision digest | `{0}` |".format(fingerprint),
         "",
     ]
     lines += _accuracy_table(calib, "## Calibration results")
@@ -243,6 +333,62 @@ def _markdown(decisions, floors, seeds, agree, document_count) -> str:
         "These are the questions the floors were read off, so this table is not evidence",
         "of anything beyond internal consistency. It is here because a large gap between",
         "it and the held-out table would be the signature of an overfitted floor.",
+        "",
+        "## What the second signal buys",
+        "",
+        "A one signal baseline beside the gate: the same relevance floor, and the evidence",
+        "floor at 0.0. Coverage is never below zero, so under that baseline every query",
+        "clearing the relevance floor is answerable. This is the gate with its second signal",
+        "removed.",
+        "",
+        "| set | questions | routed by the gate | routed by relevance alone |",
+        "|---|---|---|---|",
+    ]
+    rows_lab = [(i, g, b) for (i, g), b in zip(decisions, [d for _, d in baseline_decisions])]
+    for label, pick in (
+        ("labelled, no answer in the corpus", lambda i: not i["answerable_in_corpus"]),
+        ("labelled, answerable", lambda i: i["answerable_in_corpus"]),
+    ):
+        lines.append("| {0} | {1} | {2} | {3} |".format(label, *_routed(rows_lab, pick)))
+    for label, pick in (
+        ("external, no answer in the corpus", lambda i: i["answer_in"] == "none"),
+        ("external, answerable from one document", lambda i: i["answer_in"] == "one_document"),
+        ("external, answerable from two documents", lambda i: i["answer_in"] == "two_documents"),
+    ):
+        lines.append("| {0} | {1} | {2} | {3} |".format(label, *_routed(external, pick)))
+
+    lines += [
+        "",
+        "## External question set",
+        "",
+        "Thirty questions written from the corpus alone by a model that never saw the floors,",
+        "the gate or `queries.json`. The set takes no part in deriving a floor and no part in",
+        "the exit status. It answers a question the labelled set cannot: every labelled",
+        "question was written by the same hand as the corpus and the floors, so none of them",
+        "says what happens to a question phrased by somebody else.",
+        "",
+        "| kind | questions | routed by the gate | routed by relevance alone |",
+        "|---|---|---|---|",
+    ]
+    for kind in ("paraphrase", "two_documents", "missing_fact", "shared_words", "unrelated"):
+        lines.append("| {0} | {1} | {2} | {3} |".format(
+            kind, *_routed(external, lambda i, k=kind: i["kind"] == k)))
+    lines.append("| all | {0} | {1} | {2} |".format(*_routed(external, lambda i: True)))
+
+    lines += [
+        "",
+        "Every external decision:",
+        "",
+        "| question | kind | answer in | gate | relevance alone | relevance | evidence | support |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for item, gate, base in external:
+        lines.append("| {0} | {1} | {2} | {3} | {4} | {5:.3f} | {6:.3f} | {7} |".format(
+            item["query"], item["kind"], item["answer_in"], gate.zone.value,
+            base.zone.value, gate.relevance, gate.evidence,
+            gate.support_doc_id or "none"))
+
+    lines += [
         "",
         "## Floor margins",
         "",
@@ -300,10 +446,12 @@ def _cross_seed_digests(expected: str):
 
 
 def main(argv) -> int:
-    corpus, queries = load_fixtures()
-    floors = derive_floors(corpus, queries)
-    decisions = evaluate(corpus, queries, floors)
-    own = digest(decisions)
+    bundle = run_all()
+    floors = bundle["floors"]
+    decisions = bundle["labelled"]
+    baseline_decisions = bundle["labelled_baseline"]
+    external = bundle["external"]
+    own = full_digest(bundle)
 
     if "--digest-only" in argv:
         # No subprocess from here: this is the mode the cross seed check calls.
@@ -312,15 +460,19 @@ def main(argv) -> int:
 
     # Cheap in process check first. On its own it cannot catch an ordering bug, which is
     # why the cross seed check follows, but it does catch accidental state in the gate.
-    repeated = {digest(evaluate(corpus, queries, floors)) for _ in range(3)}
+    repeated = {full_digest(run_all()) for _ in range(3)}
     seeds, seed_results, agree = _cross_seed_digests(own)
 
     (HERE / "results.md").write_text(
-        _markdown(decisions, floors, seeds, agree, len(corpus)), encoding="utf-8")
+        _markdown(decisions, baseline_decisions, external, floors, seeds, agree,
+                  len(bundle["corpus"]), own),
+        encoding="utf-8")
 
     held = _subset(decisions, HELD_OUT)
+    calib = _subset(decisions, CALIBRATION)
     held_total, held_leaked = _without_answer(held)
     all_total, all_leaked = _without_answer(decisions)
+    rows_lab = [(i, g, b) for (i, g), (_, b) in zip(decisions, baseline_decisions)]
 
     print("floors from calibration only: relevance {0:.3f}, evidence {1:.3f}".format(
         floors.relevance_floor, floors.evidence_floor))
@@ -332,11 +484,32 @@ def main(argv) -> int:
     print("  no answer in the corpus: {0}, routed to a generator: {1}".format(
         held_total, len(held_leaked)))
     print()
-    calib = _subset(decisions, CALIBRATION)
     print("CALIBRATION ({0} questions, the floors came from these)".format(len(calib)))
     for name, total, correct in _zone_accuracy(calib):
         print("  {0:<12} {1:>3} questions  {2:>3} correct  {3}".format(
             name, total, correct, _share(correct, total)))
+    print()
+    print("SECOND SIGNAL (gate, then the same relevance floor with evidence floor 0.0)")
+    for label, pick in (
+        ("labelled, no answer", lambda i: not i["answerable_in_corpus"]),
+        ("labelled, answerable", lambda i: i["answerable_in_corpus"]),
+    ):
+        n, g, b = _routed(rows_lab, pick)
+        print("  {0:<22} {1:>3} questions  gate {2:>3}  relevance alone {3:>3}".format(
+            label, n, g, b))
+    print()
+    print("EXTERNAL ({0} questions, no part in the floors or the exit status)".format(
+        len(external)))
+    for kind in ("paraphrase", "two_documents", "missing_fact", "shared_words", "unrelated"):
+        n, g, b = _routed(external, lambda i, k=kind: i["kind"] == k)
+        print("  {0:<15} {1:>3} questions  gate {2:>3}  relevance alone {3:>3}".format(
+            kind, n, g, b))
+    n, g, b = _routed(external, lambda i: True)
+    print("  {0:<15} {1:>3} questions  gate {2:>3}  relevance alone {3:>3}".format(
+        "all", n, g, b))
+    for item, gate, _ in external:
+        if gate.may_call_generator and item["answer_in"] == "none":
+            print("  routed with no answer in the corpus: {0}".format(item["query"]))
     print()
     for query, half, labelled, decided in _misses(decisions):
         print("wrong zone [{0}] {1}: labelled {2}, decided {3}".format(
@@ -348,11 +521,11 @@ def main(argv) -> int:
         ", ".join(seeds), "identical" if agree else "DIFFERENT"))
     print("written: eval/results.md")
 
-    # Zone accuracy is a measurement and is reported as it comes. These three are
-    # guarantees, and a run that breaks one of them is a failed run.
+    # Zone accuracy is a measurement and is reported as it comes, and so is everything the
+    # external set says. These three are guarantees, and a run that breaks one has failed.
     failed = []
     if all_leaked:
-        failed.append("{0} questions with no answer reached a generator: {1}".format(
+        failed.append("{0} labelled questions with no answer reached a generator: {1}".format(
             len(all_leaked), all_leaked))
     if repeated != {own}:
         failed.append("repeated runs in one process disagreed")

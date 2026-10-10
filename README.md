@@ -121,7 +121,7 @@ is narrower: nothing the corpus cannot answer may reach a generator.
 | across both halves, questions with no answer | 33 |
 | of those, routed to a generator | 0 |
 | decisions identical across hash seeds 0, 1, 2 | yes |
-| decision digest | `8102543180eebe60a1d134bf191b3b1ba3de764e0acea8b63440cd9e0921bbc0` |
+| decision digest | `fe31badcb355fc9a37facab27194b1b04b9dcc9e422e65b5efdfb32d25a9ae4f` |
 
 Calibration accuracy is 24 of 24. Those are the questions the floors were read off, so that
 number is internal consistency and nothing more. It is reported because a large gap between
@@ -134,6 +134,63 @@ interpreter's hash seed. The determinism check runs the whole evaluation again i
 processes under different values of `PYTHONHASHSEED` and compares digests. Repeating the run inside one process would
 not establish anything: the hash seed is fixed for the lifetime of a process, so a result
 that depends on set iteration order is perfectly stable until the next start.
+
+### What the second signal buys
+
+A one signal baseline beside the gate: the same relevance floor, with the evidence floor at
+0.0. Coverage never falls below zero, so under that baseline every query clearing the
+relevance floor is answerable. It is the gate with its second signal removed.
+
+| set | questions | routed by the gate | routed by relevance alone |
+|---|---|---|---|
+| labelled, no answer in the corpus | 33 | 0 | 17 |
+| labelled, answerable | 17 | 16 | 17 |
+| external, no answer in the corpus | 16 | 1 | 13 |
+| external, answerable from one document | 10 | 0 | 10 |
+| external, answerable from two documents | 4 | 0 | 4 |
+
+On the labelled set the second signal is what stops all 17 unanswerable questions that score
+above the relevance floor, at a cost of one answerable question out of 17. On the external set
+it cuts the unanswerable questions reaching a generator from 13 to 1, and it also refuses all
+14 that the corpus does answer.
+
+### The external question set
+
+Thirty questions written from the corpus alone by a model that never saw the floors, the gate
+or `queries.json`. It answers a question the labelled set cannot: every labelled question was
+written by the same hand as the corpus and the floors, so none of them says what happens to a
+question somebody else phrased. The set takes no part in deriving a floor and no part in the
+exit status.
+
+| kind | questions | routed by the gate | routed by relevance alone |
+|---|---|---|---|
+| paraphrase | 10 | 0 | 10 |
+| two_documents | 4 | 0 | 4 |
+| missing_fact | 8 | 1 | 8 |
+| shared_words | 4 | 0 | 4 |
+| unrelated | 4 | 0 | 1 |
+| all | 30 | 1 | 27 |
+
+**The gate refused all ten paraphrased questions that a single document answers.** The reason
+is the definition of evidence: coverage is exact term presence, and "how hard is velmarite"
+does not contain the word hardness, so the velmarite record covers one content term out of
+two and scores 0.500 against a floor of 0.900. The same applies to the other nine. On this
+evidence the gate is unusable in front of questions phrased in ordinary words, and a
+deployment would have to pair it with stemming, a synonym list or an embedding similarity
+standing in for coverage. The labelled set never showed this, because its questions and its
+corpus were written by the same hand and share vocabulary.
+
+One external question reached a generator with no answer in the corpus: "what temperature are
+the sample trays kept at". The storage record says the trays are kept at a steady temperature
+and gives no value, so both content terms are present and coverage is 1.000. This is the
+term-presence failure described under scope limits, now with a number against it.
+
+Relevance alone routed 27 of the 30, including 13 of the 16 that have no answer in the corpus.
+The three it refused are unrelated questions sharing no term with any record. The fourth
+unrelated question got through it, "good recipe for banana bread", because "good" appears in
+the cleavage terminology record and nothing else in the question does.
+
+### Floor margins
 
 The nearest fixture value on each side of each floor, per half:
 
@@ -159,16 +216,19 @@ make eval
 Python 3.9 or newer, standard library only: no dependency install, no API key, no network, no
 model download. The command rewrites `eval/results.md` and exits non-zero if anything
 unanswerable reaches a generator or if two runs disagree. Zone accuracy is printed as it comes
-and does not affect the exit status, so a held-out miss is reported and not suppressed.
-`make test` runs the 43 tests.
+and does not affect the exit status, so a held-out miss is reported and not suppressed. The
+external set is a measurement and does not affect it either.
+`make test` runs the 49 tests.
 
 ## Scope limits
 
 - The floors come from the calibration half, so the held-out table is a generalisation
   measurement and the calibration table is not. Neither is evidence that 0.153 and 0.900
   transfer to another corpus or another retriever. Re-derive both on your own data.
-- Evidence is term presence, not semantic support. The counted miss above is one side of
-  that. The other side is a false pass, and the labelled set carries no example of it, so
+- Evidence is term presence, not semantic support. This is the gate's largest weakness and
+  the external set measures it: ten paraphrased questions that a single document answers were
+  all refused, because the words the question uses are not the words the document uses. The
+  counted held-out miss is the same failure. The other side is a false pass, and the labelled set carries no example of it, so
   here are two probes from this corpus that are not in it. "Who stored the samples" has both
   of its content terms in one document and reaches the answerable zone, although the corpus
   never records who did the storing: "who" is a function word and is dropped before coverage

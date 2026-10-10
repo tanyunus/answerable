@@ -26,7 +26,7 @@ to enforce is narrower: nothing the corpus cannot answer may reach a generator.
 | across both halves, questions with no answer | 33 |
 | of those, routed to a generator | 0 |
 | decisions identical across hash seeds 0, 1, 2 | yes |
-| decision digest | `8102543180eebe60a1d134bf191b3b1ba3de764e0acea8b63440cd9e0921bbc0` |
+| decision digest | `fe31badcb355fc9a37facab27194b1b04b9dcc9e422e65b5efdfb32d25a9ae4f` |
 
 ## Calibration results
 
@@ -40,6 +40,73 @@ to enforce is narrower: nothing the corpus cannot answer may reach a generator.
 These are the questions the floors were read off, so this table is not evidence
 of anything beyond internal consistency. It is here because a large gap between
 it and the held-out table would be the signature of an overfitted floor.
+
+## What the second signal buys
+
+A one signal baseline beside the gate: the same relevance floor, and the evidence
+floor at 0.0. Coverage is never below zero, so under that baseline every query
+clearing the relevance floor is answerable. This is the gate with its second signal
+removed.
+
+| set | questions | routed by the gate | routed by relevance alone |
+|---|---|---|---|
+| labelled, no answer in the corpus | 33 | 0 | 17 |
+| labelled, answerable | 17 | 16 | 17 |
+| external, no answer in the corpus | 16 | 1 | 13 |
+| external, answerable from one document | 10 | 0 | 10 |
+| external, answerable from two documents | 4 | 0 | 4 |
+
+## External question set
+
+Thirty questions written from the corpus alone by a model that never saw the floors,
+the gate or `queries.json`. The set takes no part in deriving a floor and no part in
+the exit status. It answers a question the labelled set cannot: every labelled
+question was written by the same hand as the corpus and the floors, so none of them
+says what happens to a question phrased by somebody else.
+
+| kind | questions | routed by the gate | routed by relevance alone |
+|---|---|---|---|
+| paraphrase | 10 | 0 | 10 |
+| two_documents | 4 | 0 | 4 |
+| missing_fact | 8 | 1 | 8 |
+| shared_words | 4 | 0 | 4 |
+| unrelated | 4 | 0 | 1 |
+| all | 30 | 1 | 27 |
+
+Every external decision:
+
+| question | kind | answer in | gate | relevance alone | relevance | evidence | support |
+|---|---|---|---|---|---|---|---|
+| how hard is velmarite | paraphrase | one_document | ambiguous | answerable | 0.267 | 0.500 | d01 |
+| what does cindralite look like | paraphrase | one_document | ambiguous | answerable | 0.302 | 0.333 | d03 |
+| where would i go to find obrekite | paraphrase | one_document | ambiguous | answerable | 0.296 | 0.333 | d04 |
+| how heavy is pellomite for its size | paraphrase | one_document | ambiguous | answerable | 0.372 | 0.333 | d07 |
+| does thornodite smell of anything when you crack it open | paraphrase | one_document | ambiguous | answerable | 0.182 | 0.200 | d02 |
+| what kind of gloves do you need to touch the samples | paraphrase | one_document | ambiguous | answerable | 0.177 | 0.200 | d15 |
+| why do they keep the specimen trays out of the light | paraphrase | one_document | ambiguous | answerable | 0.233 | 0.400 | d15 |
+| how many times do they weigh things in water to get a density number | paraphrase | one_document | ambiguous | answerable | 0.413 | 0.375 | d20 |
+| what happens if the same specimen gets sent in twice | paraphrase | one_document | ambiguous | answerable | 0.183 | 0.167 | d14 |
+| how big do lumps of sarnakite get | paraphrase | one_document | ambiguous | answerable | 0.309 | 0.250 | d08 |
+| which is harder, velmarite or cindralite | two_documents | two_documents | ambiguous | answerable | 0.214 | 0.333 | d01 |
+| what does a specimen label look like and what else gets written down in the catalogue | two_documents | two_documents | ambiguous | answerable | 0.225 | 0.222 | d13 |
+| which is denser, pellomite or obrekite | two_documents | two_documents | ambiguous | answerable | 0.263 | 0.333 | d04 |
+| what is the hardness of yalvanite and how many steps does the scale it is measured on have | two_documents | two_documents | ambiguous | answerable | 0.326 | 0.500 | d05 |
+| how hard is thornodite | missing_fact | none | ambiguous | answerable | 0.229 | 0.500 | d02 |
+| what colour is obrekite | missing_fact | none | ambiguous | answerable | 0.237 | 0.500 | d03 |
+| how dense is yalvanite | missing_fact | none | ambiguous | answerable | 0.317 | 0.500 | d05 |
+| who collected the velmarite specimens | missing_fact | none | ambiguous | answerable | 0.333 | 0.667 | d01 |
+| how long did each survey season last | missing_fact | none | ambiguous | answerable | 0.320 | 0.500 | d13 |
+| what temperature are the sample trays kept at | missing_fact | none | answerable | answerable | 0.502 | 1.000 | d15 |
+| which minerals glow under uv light | missing_fact | none | ambiguous | answerable | 0.262 | 0.250 | d15 |
+| what years did the regional survey run | missing_fact | none | ambiguous | answerable | 0.342 | 0.500 | d01 |
+| what is the population density of tokyo | shared_words | none | ambiguous | answerable | 0.259 | 0.333 | d04 |
+| what label format do couriers need on a parcel | shared_words | none | ambiguous | answerable | 0.351 | 0.400 | d17 |
+| best sealed trays for storing meal prep in the freezer | shared_words | none | ambiguous | answerable | 0.355 | 0.286 | d15 |
+| how many seasons does a typical tv drama run for | shared_words | none | ambiguous | answerable | 0.301 | 0.167 | d16 |
+| how do i reset my wifi router | unrelated | none | empty | empty | 0.000 | 0.000 | none |
+| good recipe for banana bread | unrelated | none | ambiguous | answerable | 0.309 | 0.250 | d18 |
+| who won the 2018 world cup | unrelated | none | empty | empty | 0.000 | 0.000 | none |
+| how do i renew my passport | unrelated | none | empty | empty | 0.000 | 0.000 | none |
 
 ## Floor margins
 
