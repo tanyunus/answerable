@@ -41,7 +41,7 @@ written: eval/results.md
 
 Exit status is 0 when nothing unanswerable reached a generator and the digest matched across
 hash seeds. Zone accuracy is reported as it comes and does not affect the exit status: the
-held out half is there to be failed, and a run that hid a miss by failing would be worse than
+held-out half is there to be failed, and a run that hid a miss by failing would be worse than
 one that prints it. The digest is a `sha256` over `(question, half, zone, relevance, evidence,
 support document)` for all 50 questions in fixture order.
 
@@ -87,8 +87,8 @@ The two must agree; `tests/test_determinism.py` asserts that the committed diges
 `eval/results.md` matches a fresh run.
 
 The labelled set is split in two. Both floors, 0.146 for relevance and 0.900 for evidence, are
-read off the 24 calibration questions and the 26 held out questions take no part in choosing
-them. `tests/test_evaluation_design.py` asserts that: relabelling a held out question leaves
+read off the 24 calibration questions and the 26 held-out questions take no part in choosing
+them. `tests/test_evaluation_design.py` asserts that: relabelling a held-out question leaves
 both floors unmoved, and relabelling a calibration question moves one, so the first assertion
 cannot pass by accident.
 
@@ -109,12 +109,12 @@ Calibration accuracy is 24 of 24, measured on the questions the floors were read
 internal consistency and no more.
 
 Both floors are exercised by the fixtures. Six questions score between 0.000 and the relevance
-floor, two in the calibration half and four in the held out half, so a lower floor would admit
+floor, two in the calibration half and four in the held-out half, so a lower floor would admit
 them. On the evidence side the nearest questions below the floor sit at 0.800 in the calibration
-half and 0.750 in the held out half, so a floor of 0.75 would let all of them through. Neither
+half and 0.750 in the held-out half, so a floor of 0.75 would let all of them through. Neither
 value is free.
 
-Evidence is term presence and not semantic support. The held out miss is the false refusal side
+Evidence is term presence and not semantic support. The held-out miss is the false refusal side
 of that. The false pass side carries no label in the fixtures, and the README scope limits give
 two probes from this corpus that show it: both reach the answerable zone and neither has an
 answer in the corpus.

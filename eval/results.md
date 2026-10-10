@@ -5,7 +5,7 @@ tree produces an empty diff and a changed decision produces a readable one.
 
 Fixtures: 21 documents, 50 labelled questions (24 calibration, 26 held out), retrieval depth 5.
 
-Floors, both read off the calibration half alone: relevance 0.146, evidence 0.900. The held out half took no part in choosing them.
+Floors, both read off the calibration half alone: relevance 0.146, evidence 0.900. The held-out half took no part in choosing them.
 
 ## Held out results
 
@@ -21,7 +21,7 @@ to enforce is narrower: nothing the corpus cannot answer may reach a generator.
 
 | check | result |
 |---|---|
-| held out questions with no answer in the corpus | 17 |
+| held-out questions with no answer in the corpus | 17 |
 | of those, routed to a generator | 0 |
 | across both halves, questions with no answer | 33 |
 | of those, routed to a generator | 0 |
@@ -39,11 +39,11 @@ to enforce is narrower: nothing the corpus cannot answer may reach a generator.
 
 These are the questions the floors were read off, so this table is not evidence
 of anything beyond internal consistency. It is here because a large gap between
-it and the held out table would be the signature of an overfitted floor.
+it and the held-out table would be the signature of an overfitted floor.
 
 ## Floor margins
 
-| signal | floor | calibration below | calibration at or above | held out below | held out at or above |
+| signal | floor | calibration below | calibration at or above | held-out below | held-out at or above |
 |---|---|---|---|---|---|
 | relevance | 0.146 | 0.104 | 0.189 | 0.104 | 0.190 |
 | evidence | 0.900 | 0.800 | 1.000 | 0.750 | 1.000 |

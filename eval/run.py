@@ -1,4 +1,4 @@
-"""Derive the floors from the calibration half, score the held out half, write results.md.
+"""Derive the floors from the calibration half, score the held-out half, write results.md.
 
 This file holds all of the input and output. The decision path it calls into reads no files
 and takes no arguments it was not given, so the same decision can be reproduced from a unit
@@ -6,7 +6,7 @@ test with three lines of setup.
 
 WHY THE SET IS SPLIT. A floor read off a set of questions will separate that set, so
 reporting accuracy on it measures almost nothing. The labelled set is split in two. Both
-floors come from the calibration half alone. The headline numbers come from the held out
+floors come from the calibration half alone. The headline numbers come from the held-out
 half, which took no part in choosing them.
 
 There is no circularity in the derivation: the two signals are computed from retrieval
@@ -158,7 +158,7 @@ def _misses(decisions):
 def _margins(decisions, floors):
     """The nearest value on each side of each floor, per half of the set.
 
-    The calibration columns say how wide the gap the floor was placed in was. The held out
+    The calibration columns say how wide the gap the floor was placed in was. The held-out
     columns are the real test: a floor that separates one half and not the other was
     fitted to the half it came from.
 
@@ -215,7 +215,7 @@ def _markdown(decisions, floors, seeds, agree, document_count) -> str:
             document_count, len(decisions), len(calib), len(held), RETRIEVAL_DEPTH),
         "",
         "Floors, both read off the calibration half alone: relevance {0:.3f}, evidence "
-        "{1:.3f}. The held out half took no part in choosing them.".format(
+        "{1:.3f}. The held-out half took no part in choosing them.".format(
             floors.relevance_floor, floors.evidence_floor),
         "",
     ]
@@ -228,7 +228,7 @@ def _markdown(decisions, floors, seeds, agree, document_count) -> str:
         "",
         "| check | result |",
         "|---|---|",
-        "| held out questions with no answer in the corpus | {0} |".format(held_total),
+        "| held-out questions with no answer in the corpus | {0} |".format(held_total),
         "| of those, routed to a generator | {0} |".format(len(held_leaked)),
         "| across both halves, questions with no answer | {0} |".format(all_total),
         "| of those, routed to a generator | {0} |".format(len(all_leaked)),
@@ -242,11 +242,11 @@ def _markdown(decisions, floors, seeds, agree, document_count) -> str:
         "",
         "These are the questions the floors were read off, so this table is not evidence",
         "of anything beyond internal consistency. It is here because a large gap between",
-        "it and the held out table would be the signature of an overfitted floor.",
+        "it and the held-out table would be the signature of an overfitted floor.",
         "",
         "## Floor margins",
         "",
-        "| signal | floor | calibration below | calibration at or above | held out below | held out at or above |",
+        "| signal | floor | calibration below | calibration at or above | held-out below | held-out at or above |",
         "|---|---|---|---|---|---|",
     ]
     for name, (floor, row) in _margins(decisions, floors).items():
