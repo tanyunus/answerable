@@ -174,11 +174,12 @@ exit status.
 **The gate refused all ten paraphrased questions that a single document answers.** The reason
 is the definition of evidence: coverage is exact term presence, and "how hard is velmarite"
 does not contain the word hardness, so the velmarite record covers one content term out of
-two and scores 0.500 against a floor of 0.900. The same applies to the other nine. On this
-evidence the gate is unusable in front of questions phrased in ordinary words, and a
-deployment would have to pair it with stemming, a synonym list or an embedding similarity
-standing in for coverage. The labelled set never showed this, because its questions and its
-corpus were written by the same hand and share vocabulary.
+two and scores 0.500 against a floor of 0.900. The same applies to the other nine. Exact term
+presence is too literal for questions phrased in ordinary words. A deployment in front of
+real users needs coverage computed through stemming, a synonym list or an embedding
+similarity, with the evidence floor re-derived for that measure. The labelled set never
+showed this, because its questions and its corpus were written by the same hand and share
+vocabulary.
 
 One external question reached a generator with no answer in the corpus: "what temperature are
 the sample trays kept at". The storage record says the trays are kept at a steady temperature
