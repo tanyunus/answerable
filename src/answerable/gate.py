@@ -33,7 +33,7 @@ from .types import Decision, Thresholds, Zone
 def relevance_of(results) -> float:
     """The best score among the results, or 0.0 when there are none.
 
-    Takes the maximum rather than `results[0]` so that an unsorted result list cannot
+    Takes the maximum and not `results[0]`, so that an unsorted result list cannot
     quietly lower relevance.
     """
     if not results:

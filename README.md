@@ -42,7 +42,7 @@ Taking the maximum over single documents refuses that case instead of rewarding 
 | empty | relevance below its floor | no generator call and no documents; the caller reports that nothing is available |
 
 `Decision.may_call_generator` is the only place that answers whether a generator may run.
-Callers branch on it rather than on the zone, so that adding a fourth zone later cannot
+Callers branch on it and not on the zone, so that adding a fourth zone later cannot
 silently open the generator to it.
 
 The split between empty and ambiguous is about whether the query has any lexical anchor in

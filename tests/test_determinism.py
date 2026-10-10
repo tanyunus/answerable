@@ -47,7 +47,7 @@ class Determinism(unittest.TestCase):
 
     def test_documents_with_identical_content_are_ranked_in_a_stable_order(self):
         """Equal scores need a second sort key. The fixture questions happen to produce
-        no ties, so this builds one rather than assuming the corpus will keep providing
+        no ties, so this builds one instead of assuming the corpus will keep providing
         the case."""
         records = [
             {"doc_id": "d02", "title": "Entry", "text": "The hardness of velmarite is 4.5."},
@@ -78,7 +78,7 @@ class Determinism(unittest.TestCase):
 
     def test_the_committed_results_file_matches_a_fresh_run(self):
         """`eval/results.md` is checked in, so it has to be the output of the code
-        beside it rather than a snapshot of an older one."""
+        beside it and not a snapshot of an older one."""
         fresh = runner.digest(runner.evaluate(self.corpus, self.queries, self.floors))
         committed = (ROOT / "eval" / "results.md").read_text(encoding="utf-8")
         self.assertIn(fresh, committed)

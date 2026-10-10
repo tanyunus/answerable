@@ -91,7 +91,7 @@ class Decision:
     def may_call_generator(self) -> bool:
         """The single place that answers whether a generator may run.
 
-        Callers are expected to branch on this rather than on `zone`, so that adding a
+        Callers are expected to branch on this and not on `zone`, so that adding a
         fourth zone later cannot silently open the generator to it.
         """
         return self.zone is Zone.ANSWERABLE

@@ -55,16 +55,17 @@ unchanged tree leaves `git diff` empty. A non empty diff means a decision change
 1. `src/answerable/types.py`: the five values. `Zone` is not a severity scale.
    `Decision.may_call_generator` is the only thing that grants a generator call.
 2. `src/answerable/terms.py`: tokenisation, the stop word list, and content term extraction.
-   Content terms come back sorted and deduplicated rather than as a set, because set
-   iteration order depends on the interpreter's hash seed.
+   Content terms come back sorted and deduplicated, and not as a set. Set iteration
+   order depends on the interpreter's hash seed.
 3. `src/answerable/gate.py`: the decision. Pure functions, no file access, no clock, no
    randomness, no global state. `relevance_of`, `evidence_of`, then `decide`. Read the module
    docstring first: it states why two signals are needed and why evidence is measured per
-   document rather than across the retrieved set.
+   document and not across the retrieved set.
 4. `src/answerable/retrieve.py`: a lexical retriever included so the evaluation runs offline.
    It is not the subject of the repository. The one part worth reading is why query terms the
-   corpus has never seen are dropped from the score but kept in the term set the gate sees:
-   that asymmetry is what lets relevance stay high while evidence falls.
+   corpus has never seen are dropped from the score but kept in the term set the gate sees.
+   That asymmetry is what lets the two signals disagree. The score comes from the part of
+   the question the corpus can speak to. The coverage comes from the whole question.
 5. `eval/run.py`: all of the input and output, plus the threshold values.
 
 ## Deliberately out of scope

@@ -7,14 +7,14 @@ retrieve with; the gate only needs a score and a term set per result.
 
 Weighting: one weight per distinct content term (the fixture documents are a few sentences
 each, so repeating a term carries no extra information), inverse document frequency
-log(1 + N / (1 + df)), vectors scaled to unit length, score is the dot product and
-therefore lands in 0.0 to 1.0.
+log(1 + N / (1 + df)), vectors scaled to unit length, score is the dot product, which
+lands in 0.0 to 1.0.
 
 Query terms the corpus has never seen are dropped from the query vector, because a term no
 document contains cannot raise or lower any document's score. They stay in the content
-term set the gate receives. That asymmetry is deliberate and it is what lets relevance
-stay high while evidence falls: the part of the question the corpus can speak to decides
-the score, and the whole question decides the coverage.
+term set the gate receives. That asymmetry is deliberate and it is what lets the two
+signals disagree. The part of the question the corpus can speak to decides the score. The
+whole question decides the coverage.
 """
 
 from __future__ import annotations
@@ -88,8 +88,8 @@ class LexicalIndex:
 
 
 def _to_unit_length(weights) -> dict:
-    """Scale a term weight mapping to unit length. An all zero mapping is returned as is,
-    rather than raising: a document of nothing but stop words is a legitimate input."""
+    """Scale a term weight mapping to unit length. An all zero mapping is returned as is.
+    A document of nothing but stop words is a legitimate input, so this does not raise."""
     norm = math.sqrt(sum(w * w for w in weights.values()))
     if norm == 0.0:
         return dict(weights)
@@ -99,7 +99,7 @@ def _to_unit_length(weights) -> dict:
 def documents_from_records(records) -> list:
     """Build documents from plain dictionaries, for a caller that loaded them from a file.
 
-    Kept here rather than in the eval runner so that the shape of a document is defined in
+    Kept here and not in the eval runner, so that the shape of a document is defined in
     one place.
     """
     return [

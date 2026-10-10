@@ -8,7 +8,7 @@ one.
 
 Content terms come back sorted and deduplicated. That is not cosmetic: a set would iterate
 in an order that depends on the interpreter's hash seed, and anything derived from that
-order would change between processes while looking stable inside one.
+order would change between processes. Inside any one process it would look stable.
 """
 
 from __future__ import annotations
@@ -45,8 +45,8 @@ def tokenise(text: str) -> tuple:
 def content_terms(text: str) -> tuple:
     """The terms a question is actually about: sorted, deduplicated, stop words removed.
 
-    A question made only of function words returns an empty tuple. That is a real case and
-    the gate treats it as unanswerable rather than dividing by zero.
+    A question made only of function words returns an empty tuple. That is a real case.
+    The gate treats it as unanswerable and never divides by zero.
     """
     kept = {t for t in tokenise(text) if len(t) > 1 and t not in STOP_WORDS}
     return tuple(sorted(kept))
