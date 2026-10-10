@@ -1,0 +1,102 @@
+[
+  {
+    "doc_id": "d01",
+    "title": "Velmarite",
+    "text": "Velmarite is a layered silicate catalogued during the second regional survey. Specimens are pale green with a waxy lustre. The hardness of velmarite is 4.5 on the scratch scale. It cleaves along two planes."
+  },
+  {
+    "doc_id": "d02",
+    "title": "Thornodite",
+    "text": "Thornodite occurs as dark prismatic crystals. It is recovered from cooled vent deposits along the eastern ridges. Field notes record a faint metallic odour when a crystal is freshly broken."
+  },
+  {
+    "doc_id": "d03",
+    "title": "Cindralite",
+    "text": "Cindralite forms thin crusts on exposed basalt. The colour of cindralite ranges from rust to deep brown. The hardness of cindralite is 3 on the scratch scale."
+  },
+  {
+    "doc_id": "d04",
+    "title": "Obrekite",
+    "text": "Obrekite has a measured density of 3.1 grams per cubic centimetre. The only recorded locality is the southern scarp, where it fills narrow fractures."
+  },
+  {
+    "doc_id": "d05",
+    "title": "Yalvanite",
+    "text": "The colour of yalvanite is deep blue and it occurs in coarse grains. The hardness of yalvanite is 6 on the scratch scale. It is found across the western flats."
+  },
+  {
+    "doc_id": "d06",
+    "title": "Durnexite",
+    "text": "Durnexite crystallises late in cooling flows and sits in open cavities. Cleavage is poor and uneven."
+  },
+  {
+    "doc_id": "d07",
+    "title": "Pellomite",
+    "text": "Pellomite is straw yellow with a resinous lustre. The density of pellomite is 2.6 grams per cubic centimetre. The hardness of pellomite is 2.5 on the scratch scale."
+  },
+  {
+    "doc_id": "d08",
+    "title": "Sarnakite",
+    "text": "Sarnakite is found as blocky masses in the northern terraces. Individual masses reach half a metre across."
+  },
+  {
+    "doc_id": "d09",
+    "title": "Quelbrite",
+    "text": "Quelbrite shows a bright submetallic lustre on fresh surfaces. The hardness of quelbrite is 5.5 on the scratch scale."
+  },
+  {
+    "doc_id": "d10",
+    "title": "Mirovanite",
+    "text": "The colour of mirovanite is grey with a faint violet cast. It grows in slow cooling pockets well below the surface."
+  },
+  {
+    "doc_id": "d11",
+    "title": "Taskelite",
+    "text": "The hardness of taskelite is 7 on the scratch scale. The density of taskelite is 3.4 grams per cubic centimetre. Cleavage is perfect in one direction."
+  },
+  {
+    "doc_id": "d12",
+    "title": "Grendalite",
+    "text": "Grendalite is olive green and gives off a sharp odour when wetted. It occurs along the inner canyon walls."
+  },
+  {
+    "doc_id": "d13",
+    "title": "Catalogue entries",
+    "text": "Specimens entering the archive are catalogued by survey season and given a six character label. The catalogue records the collector, the locality and the date of entry."
+  },
+  {
+    "doc_id": "d14",
+    "title": "The scratch scale",
+    "text": "The archive measures hardness on a ten step scratch scale. A specimen is assigned the step of the softest material that scratches it."
+  },
+  {
+    "doc_id": "d15",
+    "title": "Sample storage",
+    "text": "Samples are stored in sealed trays at a steady temperature. Trays are kept away from direct light because several pale crystals fade."
+  },
+  {
+    "doc_id": "d16",
+    "title": "Survey seasons",
+    "text": "The regional survey ran in four seasons. Each season covered one sector of the island and ended with a sorting week."
+  },
+  {
+    "doc_id": "d17",
+    "title": "Label format",
+    "text": "Labels use three letters for the sector and three digits for the order of entry. A label is never reused after a specimen leaves the archive."
+  },
+  {
+    "doc_id": "d18",
+    "title": "Cleavage descriptions",
+    "text": "Cleavage is described as perfect, good, poor or absent. The description refers to the quality of the break and not to its direction."
+  },
+  {
+    "doc_id": "d19",
+    "title": "Lustre descriptions",
+    "text": "Lustre is recorded as metallic, submetallic, waxy, resinous or dull. Readings are taken on a fresh surface under diffuse light."
+  },
+  {
+    "doc_id": "d20",
+    "title": "Density readings",
+    "text": "Density is measured by water displacement and reported in grams per cubic centimetre. Readings are repeated three times and averaged."
+  }
+]
