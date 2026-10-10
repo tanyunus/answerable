@@ -21,26 +21,28 @@ class Determinism(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.corpus, cls.queries = runner.load_fixtures()
+        cls.floors = runner.derive_floors(cls.corpus, cls.queries)
 
     def test_deciding_the_same_question_twice_gives_the_same_answer(self):
         """No hidden state accumulates between calls."""
         index = LexicalIndex(documents_from_records(self.corpus))
         terms = content_terms("what is the hardness of thornodite")
-        first = decide(terms, index.search(terms, runner.RETRIEVAL_DEPTH), runner.THRESHOLDS)
-        second = decide(terms, index.search(terms, runner.RETRIEVAL_DEPTH), runner.THRESHOLDS)
+        first = decide(terms, index.search(terms, runner.RETRIEVAL_DEPTH), self.floors)
+        second = decide(terms, index.search(terms, runner.RETRIEVAL_DEPTH), self.floors)
         self.assertEqual(first, second)
 
     def test_running_the_whole_evaluation_repeatedly_gives_one_digest(self):
         """Rebuilding the index from scratch changes nothing."""
-        digests = {runner.digest(runner.evaluate(self.corpus, self.queries))
+        digests = {runner.digest(runner.evaluate(self.corpus, self.queries, self.floors))
                    for _ in range(5)}
         self.assertEqual(len(digests), 1)
 
     def test_the_decisions_do_not_depend_on_the_order_documents_were_supplied(self):
         """Reversing the corpus changes neither a score nor a zone."""
-        forward = runner.digest(runner.evaluate(self.corpus, self.queries))
+        forward = runner.digest(runner.evaluate(self.corpus, self.queries, self.floors))
         reversed_corpus = list(reversed(self.corpus))
-        backward = runner.digest(runner.evaluate(reversed_corpus, self.queries))
+        backward = runner.digest(runner.evaluate(reversed_corpus, self.queries,
+                                         runner.derive_floors(reversed_corpus, self.queries)))
         self.assertEqual(forward, backward)
 
     def test_documents_with_identical_content_are_ranked_in_a_stable_order(self):
@@ -77,7 +79,7 @@ class Determinism(unittest.TestCase):
     def test_the_committed_results_file_matches_a_fresh_run(self):
         """`eval/results.md` is checked in, so it has to be the output of the code
         beside it rather than a snapshot of an older one."""
-        fresh = runner.digest(runner.evaluate(self.corpus, self.queries))
+        fresh = runner.digest(runner.evaluate(self.corpus, self.queries, self.floors))
         committed = (ROOT / "eval" / "results.md").read_text(encoding="utf-8")
         self.assertIn(fresh, committed)
 

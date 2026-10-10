@@ -17,22 +17,33 @@ Python 3.9 or newer, standard library only. Nothing to install, no network acces
 Expect this on stdout:
 
 ```
-answerable    10 questions   10 correct  100%
-ambiguous     10 questions   10 correct  100%
-empty         10 questions   10 correct  100%
-all           30 questions   30 correct  100%
+floors from calibration only: relevance 0.146, evidence 0.900
 
-no answer in the corpus: 20, routed to a generator: 0
-digest 41605d45ece914ac54f8011482a1985d9eb0422088039c3e1b7c919b5de6be33
+HELD OUT (26 questions)
+  answerable     9 questions    8 correct  88.9%
+  ambiguous      8 questions    8 correct  100%
+  empty          9 questions    9 correct  100%
+  all           26 questions   25 correct  96.2%
+  no answer in the corpus: 17, routed to a generator: 0
+
+CALIBRATION (24 questions, the floors came from these)
+  answerable     8 questions    8 correct  100%
+  ambiguous      9 questions    9 correct  100%
+  empty          7 questions    7 correct  100%
+  all           24 questions   24 correct  100%
+
+wrong zone [held_out] what colour and lustre does pellomite have: labelled answerable, decided ambiguous
+digest 4c7cbeedbadfb0e134176c9c69ce688c5e162a9ecbbddd057f3c5fa2eef774c8
 repeated in process: identical
 hash seeds 0, 1, 2: identical
 written: eval/results.md
 ```
 
-Exit status is 0 only if every labelled question landed in its expected zone, nothing
-unanswerable reached a generator, and the digest matched across hash seeds. The digest is a
-`sha256` over `(question, zone, relevance, evidence, support document)` for all 30 questions
-in fixture order.
+Exit status is 0 when nothing unanswerable reached a generator and the digest matched across
+hash seeds. Zone accuracy is reported as it comes and does not affect the exit status: the
+held out half is there to be failed, and a run that hid a miss by failing would be worse than
+one that prints it. The digest is a `sha256` over `(question, half, zone, relevance, evidence,
+support document)` for all 50 questions in fixture order.
 
 `eval/results.md` is committed and contains no timestamp, so running `make eval` on an
 unchanged tree leaves `git diff` empty. A non empty diff means a decision changed.
@@ -74,21 +85,35 @@ Every number in `README.md` is produced by `make eval` and also written to `eval
 The two must agree; `tests/test_determinism.py` asserts that the committed digest in
 `eval/results.md` matches a fresh run.
 
-The floors, 0.10 for relevance and 0.75 for evidence, were read off the fixture distribution
-rather than brought in from elsewhere. On the 30 labelled questions, relevance is 0.000 for
-every `empty` question and at least 0.184 for every other one, and evidence is at most 0.500
-for every `ambiguous` question and exactly 1.000 for every `answerable` one. Each floor sits
-in the gap between those groups, and `eval/results.md` reports the nearest value on each side
-so that a later change to the fixtures narrowing a gap is visible in the diff.
+The labelled set is split in two. Both floors, 0.146 for relevance and 0.900 for evidence, are
+read off the 24 calibration questions and the 26 held out questions take no part in choosing
+them. `tests/test_evaluation_design.py` asserts that: relabelling a held out question leaves
+both floors unmoved, and relabelling a calibration question moves one, so the first assertion
+cannot pass by accident.
 
-Two cautions if you are about to describe the results:
+Each floor is placed midway between the two groups it has to separate. For relevance those are
+the calibration questions labelled empty, which top out at 0.104, and every other calibration
+question, which starts at 0.189. For evidence they are the calibration questions labelled
+ambiguous, which top out at 0.800, and those labelled answerable, which are all at 1.000. The
+margins table in `eval/results.md` gives the nearest value on each side of each floor for both
+halves, so a floor that separates the half it came from and not the other one is visible.
 
-- 100% zone accuracy is measured on the set the floors were derived from. It shows the gate
-  implements the stated decision, not that the floors generalise.
-- The relevance floor's exact value is not exercised by the fixtures, because the empty
-  questions all score exactly 0.000. `tests/test_zone_boundaries.py` tests that boundary with
-  constructed inputs instead, including the value exactly on the floor.
+## Limits of the results
 
-The failure mode the gate does not catch is in the README scope limits, with two worked
-examples from this corpus. Both reach the answerable zone and neither has an answer in the
-corpus.
+Held out accuracy is 25 of 26. The miss is "what colour and lustre does pellomite have": its
+document gives the lustre and calls the specimen straw yellow without using the word colour,
+so coverage came to 0.667 and the question was held back although a reader could answer it.
+
+Calibration accuracy is 24 of 24, measured on the questions the floors were read off. It shows
+internal consistency and no more.
+
+Both floors are exercised by the fixtures. Six questions score between 0.000 and the relevance
+floor, two in the calibration half and four in the held out half, so a lower floor would admit
+them. On the evidence side the nearest questions below the floor sit at 0.800 in the calibration
+half and 0.750 in the held out half, so a floor of 0.75 would let all of them through. Neither
+value is free.
+
+Evidence is term presence and not semantic support. The held out miss is the false refusal side
+of that. The false pass side carries no label in the fixtures, and the README scope limits give
+two probes from this corpus that show it: both reach the answerable zone and neither has an
+answer in the corpus.

@@ -98,5 +98,10 @@
     "doc_id": "d20",
     "title": "Density readings",
     "text": "Density is measured by water displacement and reported in grams per cubic centimetre. Readings are repeated three times and averaged."
+  },
+  {
+    "doc_id": "d21",
+    "title": "Handling procedure",
+    "text": "Specimens arriving from a season are unpacked on a padded bench and checked against the collector's note before anything else happens. Handling is done with cotton gloves, since skin oils leave marks that later readings pick up as a false sheen. Relative humidity in the sorting room is held near forty per cent, and a value outside that range suspends sorting until the room settles. Each arrival is weighed on a beam balance that is zeroed every morning. Small fragments are moved with tweezers and larger pieces by hand. A duplicate arrival is given its own number instead of being merged with the earlier entry, because merging loses the second collection date. Custody passes from the collector to the sorting desk and then to the deep shelves, and every handover is initialled by both sides. An ultraviolet inspection is carried out on anything that fluoresces in daylight, and the outcome is written on the reverse of the sheet. Anything that cannot be identified in two passes is set aside for a later season instead of being guessed."
   }
 ]
