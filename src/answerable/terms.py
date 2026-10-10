@@ -1,7 +1,7 @@
 """Tokenisation and content term extraction.
 
 Deliberately plain: lower case, split on anything that is not a letter or a digit, drop a
-fixed stop word list, drop single characters. No stemming, no synonyms, no multi word
+fixed stop word list, drop single characters. No stemming, no synonyms, no multi-word
 terms, no question classification. The gate does not import this module; a caller may
 supply term sets from any tokeniser as long as documents and queries go through the same
 one.

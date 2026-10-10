@@ -75,7 +75,7 @@ unchanged tree leaves `git diff` empty. A non empty diff means a decision change
 - Any judgement about an answer once a query is in the answerable zone. The gate decides
   whether to call a generator, not whether the generator was right.
 - Query understanding. No intent classification, no query rewriting, no stemming, no
-  synonyms, no multi word terms, no more than one language.
+  synonyms, no multi-word terms, no more than one language.
 - Retrieval quality. The bundled retriever is a stand in; swapping it is expected.
 - Any input or output in the decision path. `gate.py` reads nothing and writes nothing, which
   is why a zone boundary can be tested in three lines without a corpus.
