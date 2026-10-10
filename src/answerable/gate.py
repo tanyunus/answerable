@@ -14,10 +14,16 @@ Two signals, both read off the retrieval results:
               enough of what was asked.
 
 The two disagree in a specific and common case, which is the reason for having both. A
-question naming a rare entity retrieves that entity's document with a high score even when
-the document does not record the attribute the question asks for. Relevance is high and
-evidence is a fraction. A single score cannot tell that apart from an answerable question,
-and a generator handed the document will supply the missing attribute from nowhere.
+question naming a rare entity ranks that entity's document first even when the document
+does not record the attribute the question asks for. Ranking first is all that relevance
+reports, and the score behind it may be low: the best of a weak field still comes first.
+Evidence is then a fraction, and a single number cannot tell that apart from an answerable
+question. A generator handed the document will supply the missing attribute from nowhere.
+
+The two signals need not come from the same document. Relevance is the top score and
+evidence is a maximum taken over the whole retrieved list, so the document that ranks first
+and the document that covers the most terms are often different ones. Neither signal is a
+property of a single result, and `support_doc_id` names only the second of them.
 
 Evidence is measured per document on purpose. A question whose terms are covered by two
 documents, each covering half, is the shape of a confident wrong answer: the generator

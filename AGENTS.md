@@ -17,7 +17,7 @@ Python 3.9 or newer, standard library only. Nothing to install, no network acces
 Expect this on stdout:
 
 ```
-floors from calibration only: relevance 0.146, evidence 0.900
+floors from calibration only: relevance 0.153, evidence 0.900
 
 HELD OUT (26 questions)
   answerable     9 questions    8 correct  88.9%
@@ -33,7 +33,7 @@ CALIBRATION (24 questions, the floors came from these)
   all           24 questions   24 correct  100%
 
 wrong zone [held_out] what colour and lustre does pellomite have: labelled answerable, decided ambiguous
-digest 4c7cbeedbadfb0e134176c9c69ce688c5e162a9ecbbddd057f3c5fa2eef774c8
+digest 8102543180eebe60a1d134bf191b3b1ba3de764e0acea8b63440cd9e0921bbc0
 repeated in process: identical
 hash seeds 0, 1, 2: identical
 written: eval/results.md
@@ -48,7 +48,7 @@ support document)` for all 50 questions in fixture order.
 `eval/results.md` is committed and contains no timestamp, so running `make eval` on an
 unchanged tree leaves `git diff` empty. A non empty diff means a decision changed.
 
-`make test` runs 27 tests and takes under a second.
+`make test` runs 43 tests and takes under a second.
 
 ## Files that carry the decision, in reading order
 
@@ -86,7 +86,7 @@ Every number in `README.md` is produced by `make eval` and also written to `eval
 The two must agree; `tests/test_determinism.py` asserts that the committed digest in
 `eval/results.md` matches a fresh run.
 
-The labelled set is split in two. Both floors, 0.146 for relevance and 0.900 for evidence, are
+The labelled set is split in two. Both floors, 0.153 for relevance and 0.900 for evidence, are
 read off the 24 calibration questions and the 26 held-out questions take no part in choosing
 them. `tests/test_evaluation_design.py` asserts that: relabelling a held-out question leaves
 both floors unmoved, and relabelling a calibration question moves one, so the first assertion
@@ -94,10 +94,16 @@ cannot pass by accident.
 
 Each floor is placed midway between the two groups it has to separate. For relevance those are
 the calibration questions labelled empty, which top out at 0.104, and every other calibration
-question, which starts at 0.189. For evidence they are the calibration questions labelled
+question, which starts at 0.203. For evidence they are the calibration questions labelled
 ambiguous, which top out at 0.800, and those labelled answerable, which are all at 1.000. The
 margins table in `eval/results.md` gives the nearest value on each side of each floor for both
 halves, so a floor that separates the half it came from and not the other one is visible.
+
+Every question labelled empty or ambiguous carries an `absent` field in
+`eval/queries.json` naming what the corpus does not supply and what its best document records
+instead, so a label can be checked against the corpus without rerunning anything.
+`tests/test_evaluation_design.py` asserts the field is present on every such question and
+absent on the answerable ones.
 
 ## Limits of the results
 
@@ -108,11 +114,13 @@ so coverage came to 0.667 and the question was held back although a reader could
 Calibration accuracy is 24 of 24, measured on the questions the floors were read off. It shows
 internal consistency and no more.
 
-Both floors are exercised by the fixtures. Six questions score between 0.000 and the relevance
-floor, two in the calibration half and four in the held-out half, so a lower floor would admit
-them. On the evidence side the nearest questions below the floor sit at 0.800 in the calibration
-half and 0.750 in the held-out half, so a floor of 0.75 would let all of them through. Neither
-value is free.
+Both floors are exercised by the fixtures. Sixteen questions fall under the relevance floor.
+Ten of them score exactly 0.000, because no term of the question appears anywhere in the
+corpus, and those ten would be refused by any floor above zero. The other six score 0.104, two
+in the calibration half and four in the held-out half, and they are the ones that constrain the
+value: a floor of 0.10 would admit them. On the evidence side the nearest questions below the
+floor sit at 0.800 in the calibration half and 0.750 in the held-out half, so a floor of 0.75
+would let all of them through. Neither value is free.
 
 Evidence is term presence and not semantic support. The held-out miss is the false refusal side
 of that. The false pass side carries no label in the fixtures, and the README scope limits give

@@ -11,7 +11,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "eval"))
 
-from answerable import LexicalIndex, documents_from_records  # noqa: E402
+from answerable import (  # noqa: E402
+    LexicalIndex, content_terms, documents_from_records,
+)
 import run as runner  # noqa: E402
 
 
@@ -80,6 +82,35 @@ class EvaluationDesign(unittest.TestCase):
         sizes = [len([i for i in self.queries if i["set"] == half])
                  for half in (runner.CALIBRATION, runner.HELD_OUT)]
         self.assertLessEqual(abs(sizes[0] - sizes[1]), max(sizes) // 4)
+
+    def test_every_refusal_label_names_what_the_corpus_is_missing(self):
+        """A label nobody can audit against the corpus is a label nobody audits. Eight of
+        these were wrong at one point, and all eight made a refusal count as correct."""
+        for item in self.queries:
+            if item["expected_zone"] == "answerable":
+                self.assertNotIn("absent", item, item["query"])
+                continue
+            self.assertIn("absent", item, item["query"])
+            self.assertIn(":", item["absent"], item["query"])
+            self.assertGreater(len(item["absent"]), 20, item["query"])
+
+    def test_each_near_miss_question_shares_one_term_with_one_long_document(self):
+        """The near-miss questions sit just under the relevance floor because they share a
+        single term with the longest document, where one match is weak evidence. A second
+        shared term, or a term from a short document, would lift them over the floor and
+        the floor would stop being exercised."""
+        corpus_terms = {}
+        for doc in self.corpus:
+            for term in content_terms(doc["title"] + " " + doc["text"]):
+                corpus_terms.setdefault(term, set()).add(doc["doc_id"])
+        near = [item for item in self.queries
+                if 0.0 < self.signals[item["query"]][0] < self.floors.relevance_floor]
+        self.assertGreaterEqual(len(near), 4)
+        for item in near:
+            shared = {t: corpus_terms[t] for t in content_terms(item["query"])
+                      if t in corpus_terms}
+            self.assertEqual(len(shared), 1, (item["query"], shared))
+            self.assertEqual(list(shared.values())[0], {"d21"}, (item["query"], shared))
 
     def test_every_question_belongs_to_exactly_one_half(self):
         halves = {item["set"] for item in self.queries}

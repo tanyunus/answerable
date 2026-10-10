@@ -5,7 +5,7 @@ tree produces an empty diff and a changed decision produces a readable one.
 
 Fixtures: 21 documents, 50 labelled questions (24 calibration, 26 held out), retrieval depth 5.
 
-Floors, both read off the calibration half alone: relevance 0.146, evidence 0.900. The held-out half took no part in choosing them.
+Floors, both read off the calibration half alone: relevance 0.153, evidence 0.900. The held-out half took no part in choosing them.
 
 ## Held out results
 
@@ -26,7 +26,7 @@ to enforce is narrower: nothing the corpus cannot answer may reach a generator.
 | across both halves, questions with no answer | 33 |
 | of those, routed to a generator | 0 |
 | decisions identical across hash seeds 0, 1, 2 | yes |
-| decision digest | `4c7cbeedbadfb0e134176c9c69ce688c5e162a9ecbbddd057f3c5fa2eef774c8` |
+| decision digest | `8102543180eebe60a1d134bf191b3b1ba3de764e0acea8b63440cd9e0921bbc0` |
 
 ## Calibration results
 
@@ -45,7 +45,7 @@ it and the held-out table would be the signature of an overfitted floor.
 
 | signal | floor | calibration below | calibration at or above | held-out below | held-out at or above |
 |---|---|---|---|---|---|
-| relevance | 0.146 | 0.104 | 0.189 | 0.104 | 0.190 |
+| relevance | 0.153 | 0.104 | 0.203 | 0.104 | 0.190 |
 | evidence | 0.900 | 0.800 | 1.000 | 0.750 | 1.000 |
 
 ## Questions in the wrong zone
@@ -70,7 +70,7 @@ it and the held-out table would be the signature of an overfitted floor.
 | what is the hardness of durnexite | calibration | ambiguous | ambiguous | 0.280 | 0.500 | d06 |
 | what is the hardness of mirovanite | calibration | ambiguous | ambiguous | 0.258 | 0.500 | d07 |
 | what colour is obrekite | calibration | ambiguous | ambiguous | 0.237 | 0.500 | d03 |
-| what is the crystal structure of velmarite | calibration | ambiguous | ambiguous | 0.189 | 0.333 | d01 |
+| what is the melting point of velmarite | calibration | ambiguous | ambiguous | 0.267 | 0.333 | d01 |
 | what are the hardness density and colour of taskelite | calibration | ambiguous | ambiguous | 0.440 | 0.750 | d11 |
 | what are the hardness density cleavage and colour of taskelite | calibration | ambiguous | ambiguous | 0.522 | 0.800 | d11 |
 | which hardness scratch scale and odour does velmarite have | calibration | ambiguous | ambiguous | 0.306 | 0.800 | d01 |
@@ -80,8 +80,8 @@ it and the held-out table would be the signature of an overfitted floor.
 | who discovered the periodic table | calibration | empty | empty | 0.000 | 0.000 | none |
 | what is the weather forecast for tomorrow | calibration | empty | empty | 0.000 | 0.000 | none |
 | how do I reset my password | calibration | empty | empty | 0.000 | 0.000 | none |
-| are gloves mandatory | calibration | empty | empty | 0.104 | 0.500 | d21 |
-| what humidity is required | calibration | empty | empty | 0.104 | 0.500 | d21 |
+| how often are gloves replaced | calibration | empty | empty | 0.104 | 0.333 | d21 |
+| how is humidity logged | calibration | empty | empty | 0.104 | 0.500 | d21 |
 | what is the cleavage of taskelite | held_out | answerable | answerable | 0.480 | 1.000 | d11 |
 | where is sarnakite found | held_out | answerable | answerable | 0.406 | 1.000 | d08 |
 | what lustre does quelbrite have | held_out | answerable | answerable | 0.465 | 1.000 | d09 |
@@ -93,9 +93,9 @@ it and the held-out table would be the signature of an overfitted floor.
 | what colour and lustre does pellomite have | held_out | answerable | ambiguous | 0.381 | 0.667 | d07 |
 | is quelbrite toxic | held_out | ambiguous | ambiguous | 0.385 | 0.500 | d09 |
 | what is the density of thornodite | held_out | ambiguous | ambiguous | 0.190 | 0.500 | d02 |
-| where is durnexite found | held_out | ambiguous | ambiguous | 0.241 | 0.500 | d05 |
+| where is quelbrite found | held_out | ambiguous | ambiguous | 0.293 | 0.500 | d05 |
 | what is the odour of taskelite | held_out | ambiguous | ambiguous | 0.293 | 0.500 | d02 |
-| how is grendalite catalogued | held_out | ambiguous | ambiguous | 0.224 | 0.500 | d01 |
+| what is the lustre of grendalite | held_out | ambiguous | ambiguous | 0.244 | 0.500 | d01 |
 | what are the colour hardness and odour of cindralite | held_out | ambiguous | ambiguous | 0.347 | 0.750 | d03 |
 | what are the lustre colour density and locality of pellomite | held_out | ambiguous | ambiguous | 0.398 | 0.600 | d07 |
 | what are the hardness density cleavage colour and odour of taskelite | held_out | ambiguous | ambiguous | 0.466 | 0.667 | d11 |
@@ -104,7 +104,7 @@ it and the held-out table would be the signature of an overfitted floor.
 | how long is a flight to Lisbon | held_out | empty | empty | 0.000 | 0.000 | none |
 | which minerals are radioactive | held_out | empty | empty | 0.000 | 0.000 | none |
 | what is the orbital period of Mars | held_out | empty | empty | 0.000 | 0.000 | none |
-| which tweezers are approved | held_out | empty | empty | 0.104 | 0.500 | d21 |
-| when is a duplicate destroyed | held_out | empty | empty | 0.104 | 0.500 | d21 |
-| who signs the custody log | held_out | empty | empty | 0.104 | 0.333 | d21 |
-| is there an ultraviolet lamp | held_out | empty | empty | 0.104 | 0.500 | d21 |
+| what are the tweezers made of | held_out | empty | empty | 0.104 | 0.500 | d21 |
+| how often does a duplicate occur | held_out | empty | empty | 0.104 | 0.333 | d21 |
+| how long is custody retained | held_out | empty | empty | 0.104 | 0.333 | d21 |
+| how long does ultraviolet checking take | held_out | empty | empty | 0.104 | 0.250 | d21 |

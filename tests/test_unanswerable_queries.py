@@ -58,7 +58,7 @@ class UnanswerableQuestions(unittest.TestCase):
             self.assertTrue(item["answerable_in_corpus"], item["query"])
 
     def test_a_question_about_a_subject_the_corpus_never_mentions_is_empty(self):
-        """No lexical anchor at all means no documents are worth showing either."""
+        """Nothing in the corpus matches this at all, so no documents are offered."""
         decision = decide_fixture_question(self.index, "how do I reset my password", self.floors)
         self.assertIs(decision.zone, Zone.EMPTY)
 
